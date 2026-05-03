@@ -6,7 +6,9 @@ ENV SAGEMAKER_PROGRAM=train.py
 
 WORKDIR /opt/ml/code
 
-RUN git clone --depth 1 --branch v1.2.0 \
+ARG ISAAC_SO_ARM101_REF=main
+
+RUN git clone --depth 1 --branch ${ISAAC_SO_ARM101_REF} \
     https://github.com/MuammerBay/isaac_so_arm101.git /opt/isaac_so_arm101 \
  && /workspace/isaaclab/isaaclab.sh -p -m pip install -e /opt/isaac_so_arm101 --no-deps
 

@@ -47,7 +47,7 @@ def main() -> int:
 
     cmd: list[str] = [
         "/workspace/isaaclab/isaaclab.sh", "-p",
-        "/opt/isaac_so_arm101/scripts/rsl_rl/train.py",
+        "/opt/isaac_so_arm101/src/isaac_so_arm101/scripts/rsl_rl/train.py",
         "--task", TASK_NAME,
         "--headless",
         "--num_envs", NUM_ENVS,

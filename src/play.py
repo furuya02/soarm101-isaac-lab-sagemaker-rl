@@ -63,7 +63,12 @@ def latest_checkpoint(model_root: Path) -> Optional[Path]:
 
 
 def find_videos_dir() -> Optional[Path]:
-    for root in [ISAACLAB_DIR / "logs", Path("/opt/ml/code/logs")]:
+    candidates = [
+        ISAACLAB_DIR / "logs",
+        Path("/opt/ml/code/logs"),
+        WORK_DIR,
+    ]
+    for root in candidates:
         if not root.exists():
             continue
         for path in root.rglob("videos"):

@@ -8,9 +8,14 @@ WORKDIR /opt/ml/code
 
 # ffmpeg is required by Isaac Lab's RecordVideo wrapper (used when running
 # play.py with --video to render the trained policy to mp4 in headless mode).
-# The NGC isaac-lab base image does not ship ffmpeg, so install it explicitly.
+# The NGC isaac-lab base image does not ship ffmpeg.
+#
+# python3 is added to run scripts/patch_play.py at build time. The base
+# image bundles Python under /workspace/isaaclab/_isaac_sim, but does not
+# expose a `python3` command on PATH, which is awkward for build-time
+# patching scripts.
 RUN apt-get update \
- && apt-get install -y --no-install-recommends ffmpeg \
+ && apt-get install -y --no-install-recommends ffmpeg python3 \
  && rm -rf /var/lib/apt/lists/*
 
 ARG ISAAC_SO_ARM101_REF=main

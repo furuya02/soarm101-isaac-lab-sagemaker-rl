@@ -35,6 +35,15 @@ RUN python3 /tmp/patch_play.py \
  && grep -q "^except ImportError:" /opt/isaac_so_arm101/src/isaac_so_arm101/scripts/rsl_rl/play.py \
  && rm /tmp/patch_play.py
 
+# Replace the goal pose visualizer in the Reach env from the default frame
+# marker (XYZ axes, hard to read in playback videos) with a small red
+# sphere. The Reach reward is position-only, so a sphere conveys the goal
+# clearly without losing information. Verified by grepping the marker name.
+COPY scripts/patch_reach_visualizer.py /tmp/patch_reach_visualizer.py
+RUN python3 /tmp/patch_reach_visualizer.py \
+ && grep -q "GOAL_SPHERE_MARKER_CFG" /opt/isaac_so_arm101/src/isaac_so_arm101/tasks/reach/reach_env_cfg.py \
+ && rm /tmp/patch_reach_visualizer.py
+
 COPY src/train.py src/play.py src/entrypoint.sh /opt/ml/code/
 
 RUN chmod +x /opt/ml/code/entrypoint.sh

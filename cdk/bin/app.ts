@@ -23,7 +23,7 @@ const enableBudget: boolean =
   (app.node.tryGetContext("enable_budget") ?? "true").toString() === "true";
 
 const budgetEmail: string =
-  app.node.tryGetContext("budget_email") ?? "hirauchi.shinichi@classmethod.jp";
+  app.node.tryGetContext("budget_email") ?? "please-set-budget-email@example.com";
 
 new SoarmStack(app, "SoarmStack", {
   env: { account: accountId, region },

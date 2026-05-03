@@ -67,7 +67,7 @@ The stack creates:
 - S3 bucket: `soarm101-isaac-lab-sagemaker-rl-<ACCOUNT_ID>`
 - ECR repository: `soarm101-isaac-lab-sagemaker-rl`
 - IAM role: `soarm101-isaac-lab-sagemaker-rl-sagemaker-execution-role`
-- Monthly Budget alert (USD 100, 10/50/90 % thresholds, email to `hirauchi.shinichi@classmethod.jp`)
+- Monthly Budget alert (USD 100, 10/50/90 % thresholds, email to the address you pass via `-c budget_email=...`)
 
 To override the bucket suffix or budget email:
 

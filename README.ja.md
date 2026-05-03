@@ -67,7 +67,7 @@ cdk deploy \
 - S3 バケット: `soarm101-isaac-lab-sagemaker-rl-<ACCOUNT_ID>`
 - ECR リポジトリ: `soarm101-isaac-lab-sagemaker-rl`
 - IAM ロール: `soarm101-isaac-lab-sagemaker-rl-sagemaker-execution-role`
-- 月次 Budget アラート（USD 100、10/50/90 % しきい値、`hirauchi.shinichi@classmethod.jp` へ通知）
+- 月次 Budget アラート（USD 100、10/50/90 % しきい値、`-c budget_email=...` で指定したアドレスへ通知）
 
 bucket suffix や Budget 通知先を上書きする場合：
 

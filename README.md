@@ -116,6 +116,26 @@ tar xzf model.tar.gz
 # rsl_rl/<task>/<run>/model_<iter>.pt
 ```
 
+### 6. (Optional) Render a trained policy to mp4
+
+A second SageMaker job runs `play.py --headless --video` to render the
+trained policy without any GUI. The Dockerfile installs `ffmpeg` because
+Isaac Lab's `RecordVideo` wrapper needs it to write mp4 from frame buffers.
+
+```bash
+MODE=play \
+MODEL_S3_URI=s3://${S3_BUCKET}/output/${JOB_NAME}/output/model.tar.gz \
+USE_SPOT=true MAX_RUN_HOURS=1 MAX_WAIT_HOURS=2 \
+python submit.py
+
+# After the play job completes, download the mp4:
+PLAY_JOB=<job-name-from-the-play-submit>
+aws s3 cp s3://${S3_BUCKET}/output/${PLAY_JOB}/output/model.tar.gz play_output.tar.gz
+tar xzf play_output.tar.gz   # videos/*.mp4
+```
+
+A typical play job runs in 5-10 minutes and costs less than 0.10 USD on Spot.
+
 ## Measured cost (ap-northeast-1, May 2026)
 
 | Item | On-demand | Managed Spot |

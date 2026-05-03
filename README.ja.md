@@ -116,6 +116,24 @@ tar xzf model.tar.gz
 # rsl_rl/<task>/<run>/model_<iter>.pt が取り出せる
 ```
 
+### 6. （任意）学習済モデルから mp4 動画を生成する
+
+学習済モデルの動作を視覚的に確認したい場合は、もう 1 つ SageMaker ジョブを投入して `play.py --headless --video` を実行します。GUI 環境は不要です。`Dockerfile` で `ffmpeg` を導入しているのは、Isaac Lab の `RecordVideo` ラッパーが frame buffers を mp4 にエンコードする際に `ffmpeg` を呼び出すためです（NGC の `isaac-lab` ベースイメージには ffmpeg は同梱されていません）。
+
+```bash
+MODE=play \
+MODEL_S3_URI=s3://${S3_BUCKET}/output/${JOB_NAME}/output/model.tar.gz \
+USE_SPOT=true MAX_RUN_HOURS=1 MAX_WAIT_HOURS=2 \
+python submit.py
+
+# play ジョブ完了後、動画をダウンロード:
+PLAY_JOB=<play 用 submit の出力に表示される job name>
+aws s3 cp s3://${S3_BUCKET}/output/${PLAY_JOB}/output/model.tar.gz play_output.tar.gz
+tar xzf play_output.tar.gz   # videos/*.mp4
+```
+
+play ジョブは 5〜10 分で完了し、Spot なら 0.10 USD 未満で済みます。
+
 ## 実測コスト（ap-northeast-1、2026 年 5 月時点）
 
 | 項目 | オンデマンド | Managed Spot |

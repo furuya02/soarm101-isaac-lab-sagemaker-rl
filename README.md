@@ -9,9 +9,10 @@ Companion blog post: [SO-ARM101 with Isaac Lab on SageMaker Training Job (Manage
 ## Overview
 
 - Base image: `nvcr.io/nvidia/isaac-lab:2.3.2` (Isaac Lab 2.3.2 + Isaac Sim 5.1.x)
-- Task: `Isaac-SO-ARM101-Reach-v0` (from [MuammerBay/isaac_so_arm101](https://github.com/MuammerBay/isaac_so_arm101) v1.2.0)
-- Training: SageMaker Training Job, ml.g6.2xlarge (NVIDIA L4 24 GB), Managed Spot
+- Task: `Isaac-SO-ARM101-Reach-v0` (from [MuammerBay/isaac_so_arm101](https://github.com/MuammerBay/isaac_so_arm101), main branch)
+- Training: SageMaker Training Job, **ml.g5.2xlarge** (NVIDIA A10G 24 GB) by default, Managed Spot
 - Region: `ap-northeast-1`
+- Verified cost (one full Reach run, max_iterations=1000): **about 0.31 USD** on-demand, **about 0.13 USD with Managed Spot (58% off)**
 
 ## Repository layout
 
@@ -115,16 +116,23 @@ tar xzf model.tar.gz
 # rsl_rl/<task>/<run>/model_<iter>.pt
 ```
 
-## Cost estimate (ap-northeast-1, May 2026)
+## Measured cost (ap-northeast-1, May 2026)
 
-| Resource | Estimated cost |
+| Item | On-demand | Managed Spot |
+|---|---|---|
+| Instance | ml.g5.2xlarge (A10G 24GB) | ml.g5.2xlarge (A10G 24GB) |
+| Training time (real) | 727 s (12 min) | 733 s (12 min) |
+| Billable time | 727 s | 309 s |
+| **Cost per run** | **0.306 USD** | **0.130 USD (58% off)** |
+
+Other recurring costs:
+
+| Resource | Cost |
 |---|---|
-| ml.g6.2xlarge (on-demand) | ~ $1.81 / hour |
-| ml.g6.2xlarge (Managed Spot, 70 % off) | ~ $0.54 / hour |
-| ECR storage (15 GB image) | ~ $1.50 / month |
-| S3 (artifacts + checkpoints, < 1 GB) | < $0.10 / month |
+| ECR storage (~40 GB image, uncompressed) | ~ 4.0 USD / month while the image is retained |
+| S3 (artifacts + checkpoints, < 100 MB) | < 0.10 USD / month |
 
-A typical Reach training run (`--num_envs 64`, `--max_iterations 1000`) is estimated at well under USD 5 per attempt with Managed Spot.
+`ml.g6.2xlarge` (NVIDIA L4) at ~ 1.81 USD/hour on-demand, ~ 0.54 USD/hour Spot is also a valid choice once its quota is granted (see Caveats below).
 
 ## Cleanup
 
@@ -139,7 +147,10 @@ cdk destroy
 - **Managed Spot requires checkpoints.** Without a checkpoint implementation, `max_wait` is capped at 1 hour. `src/train.py` resumes from `/opt/ml/checkpoints/model_*.pt` automatically.
 - **`max_run` is mandatory.** Always set this to prevent runaway training charges.
 - **Region pinning.** Keep ECR, S3 and SageMaker all in `ap-northeast-1` to avoid inter-region data transfer fees.
-- **Image size.** The base image is ~15 GB. SageMaker pulls the image at job start, adding 5-10 minutes of overhead per job.
+- **Image size.** The `nvcr.io/nvidia/isaac-lab:2.3.2` base image is about 40 GB uncompressed. The first ECR push takes 30-60 minutes on a home connection, and SageMaker pulls the image at job start (5-10 minutes overhead per job).
+- **Service Quotas.** New AWS accounts often have **0 quota** for SageMaker GPU instances, even on the latest generation (g6, L4). `ml.g5.2xlarge` (used as default here) typically has a quota of 1 out of the box. To switch to `ml.g6.2xlarge` request the quota first under "Service Quotas" -> "Amazon SageMaker" -> "ml.g6.2xlarge for training job usage" and "for spot training job usage".
+- **`isaac_so_arm101` repository layout.** The `v1.2.0` tag uses an older `source/SO_100/` layout. Use the `main` branch (or pin a recent commit via the `ISAAC_SO_ARM101_REF` Docker build arg) so that `pip install -e .` succeeds against the standard `src/isaac_so_arm101/` layout.
+- **Mac Docker disk limit.** macOS Docker Desktop defaults the virtual disk size to 64 GB, which is too small once the 40 GB Isaac Lab image is added. Either run `docker builder prune -a -f` to recover space, or raise the limit to 200 GB in Docker Desktop -> Settings -> Resources -> Advanced.
 
 ## License
 

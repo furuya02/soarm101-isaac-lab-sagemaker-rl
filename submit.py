@@ -6,12 +6,17 @@ Required environment variables:
 - S3_BUCKET          : S3 bucket name for output / checkpoints
 
 Optional:
-- INSTANCE_TYPE      : default ml.g6.2xlarge
+- INSTANCE_TYPE      : default ml.g5.2xlarge
 - USE_SPOT           : default true
 - NUM_ENVS           : default 64
 - MAX_ITERATIONS     : default 1000
 - MAX_RUN_HOURS      : default 2
 - MAX_WAIT_HOURS     : default 6
+
+Note: ml.g5.2xlarge is chosen as the default because new AWS accounts often
+have a quota of 1 for it, while ml.g6 (L4) family quotas are frequently 0
+until manually requested. To use g6, request the quota first and pass
+`INSTANCE_TYPE=ml.g6.2xlarge`.
 """
 
 from __future__ import annotations
@@ -34,7 +39,7 @@ def main() -> None:
     image_uri: str = os.environ["ECR_IMAGE_URI"]
     bucket: str = os.environ["S3_BUCKET"]
 
-    instance_type: str = os.environ.get("INSTANCE_TYPE", "ml.g6.2xlarge")
+    instance_type: str = os.environ.get("INSTANCE_TYPE", "ml.g5.2xlarge")
     use_spot: bool = env_bool("USE_SPOT", True)
     num_envs: str = os.environ.get("NUM_ENVS", "64")
     max_iterations: str = os.environ.get("MAX_ITERATIONS", "1000")

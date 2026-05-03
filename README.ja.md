@@ -9,9 +9,10 @@ SO-ARM101 の Reach タスクを Isaac Lab で強化学習し、Amazon SageMaker
 ## 概要
 
 - ベースイメージ: `nvcr.io/nvidia/isaac-lab:2.3.2`（Isaac Lab 2.3.2 + Isaac Sim 5.1.x 同梱）
-- タスク: `Isaac-SO-ARM101-Reach-v0`（[MuammerBay/isaac_so_arm101](https://github.com/MuammerBay/isaac_so_arm101) v1.2.0）
-- 学習基盤: SageMaker Training Job、ml.g6.2xlarge（NVIDIA L4 24 GB）、Managed Spot
+- タスク: `Isaac-SO-ARM101-Reach-v0`（[MuammerBay/isaac_so_arm101](https://github.com/MuammerBay/isaac_so_arm101) main ブランチ）
+- 学習基盤: SageMaker Training Job、デフォルト **ml.g5.2xlarge**（NVIDIA A10G 24 GB）、Managed Spot
 - リージョン: `ap-northeast-1`
+- 実測コスト（Reach 1 試行、`max_iterations=1000`）：オンデマンド **約 0.31 USD** / Managed Spot **約 0.13 USD（58% 削減）**
 
 ## リポジトリ構成
 
@@ -115,16 +116,23 @@ tar xzf model.tar.gz
 # rsl_rl/<task>/<run>/model_<iter>.pt が取り出せる
 ```
 
-## コスト目安（ap-northeast-1、2026 年 5 月時点）
+## 実測コスト（ap-northeast-1、2026 年 5 月時点）
 
-| リソース | 想定コスト |
+| 項目 | オンデマンド | Managed Spot |
+|---|---|---|
+| インスタンス | ml.g5.2xlarge（A10G 24GB） | ml.g5.2xlarge（A10G 24GB） |
+| 学習時間（実時間） | 727 秒（12 分） | 733 秒（12 分） |
+| 課金時間 | 727 秒 | 309 秒 |
+| **1 試行コスト** | **0.306 USD** | **0.130 USD（58% off）** |
+
+そのほか継続発生するコスト：
+
+| リソース | コスト |
 |---|---|
-| ml.g6.2xlarge（オンデマンド） | 約 $1.81 / 時 |
-| ml.g6.2xlarge（Managed Spot、70 % off） | 約 $0.54 / 時 |
-| ECR ストレージ（15 GB image） | 約 $1.50 / 月 |
-| S3（成果物 + チェックポイント、1 GB 未満） | 月額 $0.10 未満 |
+| ECR ストレージ（約 40 GB の image を保持する間） | 約 4.0 USD / 月 |
+| S3（成果物 + チェックポイント、100 MB 未満） | 月額 0.10 USD 未満 |
 
-Reach タスクの典型的な学習（`--num_envs 64`、`--max_iterations 1000`）は、Managed Spot の場合 1 試行あたり USD 5 を十分下回る見込みです。
+`ml.g6.2xlarge`（NVIDIA L4、オンデマンド約 1.81 USD/時、Spot 約 0.54 USD/時）も quota が払い出されれば有力な選択肢です（注意事項を参照）。
 
 ## クリーンアップ
 
@@ -139,7 +147,10 @@ cdk destroy
 - **Managed Spot にはチェックポイント実装が必須**。チェックポイントがないと `max_wait` の上限が 1 時間に制限されます。`src/train.py` は `/opt/ml/checkpoints/model_*.pt` から自動的に再開します。
 - **`max_run` は必ず指定**。学習暴走による課金事故を防ぎます。
 - **リージョン固定**。ECR / S3 / SageMaker をすべて `ap-northeast-1` に揃え、リージョン間データ転送料金を回避します。
-- **Image サイズ**。ベース image は約 15 GB。SageMaker はジョブ起動時に pull するため、起動オーバーヘッドが 5〜10 分程度発生します。
+- **Image サイズ**。`nvcr.io/nvidia/isaac-lab:2.3.2` のベース image は uncompressed 約 40 GB。家庭回線では初回 ECR push に 30〜60 分、SageMaker のジョブ起動時の pull で 5〜10 分の起動オーバーヘッドが発生します。
+- **Service Quotas**。新規 AWS アカウントでは SageMaker GPU 系インスタンスの quota が 0 のことが多く、特に最新の g6（L4）系は 0 のままです。本リポジトリでデフォルトとしている `ml.g5.2xlarge` は標準で quota = 1 立っていることが多く動作します。`ml.g6.2xlarge` を使う場合は事前に Service Quotas で「ml.g6.2xlarge for training job usage」と「for spot training job usage」を申請してください。
+- **`isaac_so_arm101` のレイアウト**。`v1.2.0` タグは古い `source/SO_100/` レイアウトのため `pip install -e .` がそのままでは通りません。Dockerfile の build arg `ISAAC_SO_ARM101_REF` で main ブランチ（または直近の commit）を指定し、標準的な `src/isaac_so_arm101/` レイアウトを使ってください。
+- **Mac Docker のディスク上限**。macOS の Docker Desktop は仮想ディスクのデフォルト上限が 64 GB で、40 GB の Isaac Lab image を扱うには不足します。`docker builder prune -a -f` で空き容量を確保するか、Docker Desktop -> Settings -> Resources -> Advanced で 200 GB に拡張してください。
 
 ## ライセンス
 

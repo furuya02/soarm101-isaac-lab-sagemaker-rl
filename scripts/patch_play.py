@@ -20,18 +20,22 @@ except ImportError:
         return None"""
 
 
+PATCHED_MARKER = "except ImportError:\n    def get_published_pretrained_checkpoint"
+
+
 def main() -> None:
     src = PLAY_PY.read_text()
-    if NEW.split("\n")[0] in src:
+    if OLD in src:
+        PLAY_PY.write_text(src.replace(OLD, NEW))
+        print(f"[patch_play.py] Patched: {PLAY_PY}")
+        return
+    if PATCHED_MARKER in src:
         print(f"[patch_play.py] Already patched: {PLAY_PY}")
         return
-    if OLD not in src:
-        raise SystemExit(
-            f"[patch_play.py] Pattern not found in {PLAY_PY}. "
-            "isaac_so_arm101 may have changed; update this patch script."
-        )
-    PLAY_PY.write_text(src.replace(OLD, NEW))
-    print(f"[patch_play.py] Patched: {PLAY_PY}")
+    raise SystemExit(
+        f"[patch_play.py] Pattern not found in {PLAY_PY}. "
+        "isaac_so_arm101 may have changed; update this patch script."
+    )
 
 
 if __name__ == "__main__":

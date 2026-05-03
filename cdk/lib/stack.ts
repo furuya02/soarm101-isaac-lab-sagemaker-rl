@@ -15,7 +15,6 @@ export interface SoarmStackProps extends cdk.StackProps {
 export class SoarmStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: SoarmStackProps) {
     super(scope, id, props);
-
     const { projectName, bucketSuffix, enableBudget, budgetEmail } = props;
 
     const bucket = new s3.Bucket(this, "ArtifactBucket", {
@@ -24,17 +23,8 @@ export class SoarmStack extends cdk.Stack {
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       encryption: s3.BucketEncryption.S3_MANAGED,
       lifecycleRules: [
-        {
-          id: "expire-old-checkpoints",
-          prefix: "checkpoints/",
-          expiration: cdk.Duration.days(30),
-          noncurrentVersionExpiration: cdk.Duration.days(7),
-        },
-        {
-          id: "expire-old-output",
-          prefix: "output/",
-          expiration: cdk.Duration.days(90),
-        },
+        { prefix: "checkpoints/", expiration: cdk.Duration.days(30) },
+        { prefix: "output/", expiration: cdk.Duration.days(90) },
       ],
     });
 
@@ -43,17 +33,7 @@ export class SoarmStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.RETAIN,
       imageScanOnPush: true,
       lifecycleRules: [
-        {
-          description: "Expire untagged images after 7 days",
-          maxImageAge: cdk.Duration.days(7),
-          tagStatus: ecr.TagStatus.UNTAGGED,
-        },
-        {
-          description: "Keep only the latest 5 tagged images",
-          maxImageCount: 5,
-          tagStatus: ecr.TagStatus.TAGGED,
-          tagPrefixList: ["latest", "v"],
-        },
+        { maxImageAge: cdk.Duration.days(7), tagStatus: ecr.TagStatus.UNTAGGED },
       ],
     });
 
@@ -64,7 +44,6 @@ export class SoarmStack extends cdk.Stack {
         iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonSageMakerFullAccess"),
       ],
     });
-
     bucket.grantReadWrite(sagemakerRole);
     repository.grantPull(sagemakerRole);
 
@@ -83,9 +62,7 @@ export class SoarmStack extends cdk.Stack {
             threshold,
             thresholdType: "PERCENTAGE",
           },
-          subscribers: [
-            { address: budgetEmail, subscriptionType: "EMAIL" },
-          ],
+          subscribers: [{ address: budgetEmail, subscriptionType: "EMAIL" }],
         })),
       });
     }

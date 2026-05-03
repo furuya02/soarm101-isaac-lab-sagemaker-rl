@@ -7,27 +7,36 @@ upstream after that release). The function is only invoked when the
 
 This script wraps the import in try/except so the play script loads correctly
 on Isaac Lab 2.3.2.
+
+Idempotent: re-running the script on an already-patched file is a no-op.
 """
 
+import re
 from pathlib import Path
 
 PLAY_PY = Path("/opt/isaac_so_arm101/src/isaac_so_arm101/scripts/rsl_rl/play.py")
-OLD = "from isaaclab.utils.pretrained_checkpoint import get_published_pretrained_checkpoint"
 NEW = """try:
     from isaaclab.utils.pretrained_checkpoint import get_published_pretrained_checkpoint
 except ImportError:
     def get_published_pretrained_checkpoint(*a, **k):
         return None"""
 
-
+# Match only when the import statement appears as a top-level (non-indented)
+# line. After patching the same import becomes 4-space indented inside the
+# try block, which this anchored pattern intentionally does not match.
+OLD_LINE_RE = re.compile(
+    r"^from isaaclab\.utils\.pretrained_checkpoint import get_published_pretrained_checkpoint$",
+    re.MULTILINE,
+)
 PATCHED_MARKER = "except ImportError:\n    def get_published_pretrained_checkpoint"
 
 
 def main() -> None:
     src = PLAY_PY.read_text()
-    if OLD in src:
-        PLAY_PY.write_text(src.replace(OLD, NEW))
-        print(f"[patch_play.py] Patched: {PLAY_PY}")
+    if OLD_LINE_RE.search(src):
+        new_src, count = OLD_LINE_RE.subn(NEW, src, count=1)
+        PLAY_PY.write_text(new_src)
+        print(f"[patch_play.py] Patched ({count} occurrence): {PLAY_PY}")
         return
     if PATCHED_MARKER in src:
         print(f"[patch_play.py] Already patched: {PLAY_PY}")

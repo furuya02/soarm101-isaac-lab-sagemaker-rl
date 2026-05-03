@@ -28,9 +28,12 @@ RUN git clone --depth 1 --branch ${ISAAC_SO_ARM101_REF} \
 # Patch isaac_so_arm101 play.py: main HEAD imports
 # isaaclab.utils.pretrained_checkpoint, which does not exist in
 # isaac-lab:2.3.2. We do not use the --use_pretrained_checkpoint flag,
-# so wrap that import in try/except.
+# so wrap that import in try/except. Verify the patch landed by grepping
+# the unique try/except marker, so a silent skip fails the build loudly.
 COPY scripts/patch_play.py /tmp/patch_play.py
-RUN python3 /tmp/patch_play.py && rm /tmp/patch_play.py
+RUN python3 /tmp/patch_play.py \
+ && grep -q "^except ImportError:" /opt/isaac_so_arm101/src/isaac_so_arm101/scripts/rsl_rl/play.py \
+ && rm /tmp/patch_play.py
 
 COPY src/train.py src/play.py src/entrypoint.sh /opt/ml/code/
 

@@ -47,8 +47,8 @@ INLINE_NEW = (
 
 VIEWER_OLD = "        self.viewer.eye = (2.5, 2.5, 1.5)"
 VIEWER_NEW = (
-    "        self.viewer.eye = (1.0, 0.8, 0.6)\n"
-    "        self.viewer.lookat = (0.0, -0.15, 0.5)"
+    "        self.viewer.eye = (1.5, 1.5, 1.0)\n"
+    "        self.viewer.lookat = (0.0, 0.0, 0.4)"
 )
 
 PATCHED_MARKER = "GOAL_SPHERE_MARKER_CFG"

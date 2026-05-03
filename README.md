@@ -33,7 +33,7 @@ Companion blog post: [SO-ARM101 with Isaac Lab on SageMaker Training Job (Manage
 - AWS account with SageMaker / S3 / ECR / Budgets access
 - AWS CLI v2 configured for `ap-northeast-1`
 - Docker (with the `linux/amd64` build platform available)
-- Node.js 20.x and AWS CDK v2 (`npm i -g aws-cdk`)
+- Node.js 20.x and AWS CDK v2 (`pnpm add -g aws-cdk`)
 - An NVIDIA NGC account and API key (`docker login nvcr.io`)
 - Python 3.11 with the SageMaker Python SDK (`pip install sagemaker`)
 
@@ -50,13 +50,13 @@ cd soarm101-isaac-lab-sagemaker-rl
 
 ```bash
 cd cdk
-npm install
+pnpm install
 
 export AWS_REGION=ap-northeast-1
 export ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 
-npx cdk bootstrap aws://${ACCOUNT_ID}/${AWS_REGION}
-npx cdk deploy \
+cdk bootstrap aws://${ACCOUNT_ID}/${AWS_REGION}
+cdk deploy \
   -c account_id=${ACCOUNT_ID} \
   -c region=${AWS_REGION}
 ```
@@ -71,7 +71,7 @@ The stack creates:
 To override the bucket suffix or budget email:
 
 ```bash
-npx cdk deploy \
+cdk deploy \
   -c account_id=${ACCOUNT_ID} \
   -c bucket_suffix=20260503 \
   -c budget_email=you@example.com
@@ -130,7 +130,7 @@ A typical Reach training run (`--num_envs 64`, `--max_iterations 1000`) is estim
 
 ```bash
 cd cdk
-npx cdk destroy
+cdk destroy
 # Empty the S3 bucket and delete ECR images manually if you want to remove them too.
 ```
 

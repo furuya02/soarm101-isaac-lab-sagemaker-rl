@@ -33,7 +33,7 @@ SO-ARM101 の Reach タスクを Isaac Lab で強化学習し、Amazon SageMaker
 - SageMaker / S3 / ECR / Budgets 権限のある AWS アカウント
 - `ap-northeast-1` 用に設定済みの AWS CLI v2
 - Docker（`linux/amd64` ビルド対応）
-- Node.js 20.x と AWS CDK v2（`npm i -g aws-cdk`）
+- Node.js 20.x と AWS CDK v2（`pnpm add -g aws-cdk`）
 - NVIDIA NGC アカウントと API key（`docker login nvcr.io`）
 - Python 3.11 と SageMaker Python SDK（`pip install sagemaker`）
 
@@ -50,13 +50,13 @@ cd soarm101-isaac-lab-sagemaker-rl
 
 ```bash
 cd cdk
-npm install
+pnpm install
 
 export AWS_REGION=ap-northeast-1
 export ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 
-npx cdk bootstrap aws://${ACCOUNT_ID}/${AWS_REGION}
-npx cdk deploy \
+cdk bootstrap aws://${ACCOUNT_ID}/${AWS_REGION}
+cdk deploy \
   -c account_id=${ACCOUNT_ID} \
   -c region=${AWS_REGION}
 ```
@@ -71,7 +71,7 @@ npx cdk deploy \
 bucket suffix や Budget 通知先を上書きする場合：
 
 ```bash
-npx cdk deploy \
+cdk deploy \
   -c account_id=${ACCOUNT_ID} \
   -c bucket_suffix=20260503 \
   -c budget_email=you@example.com
@@ -130,7 +130,7 @@ Reach タスクの典型的な学習（`--num_envs 64`、`--max_iterations 1000`
 
 ```bash
 cd cdk
-npx cdk destroy
+cdk destroy
 # S3 バケット内のオブジェクトと ECR の image は、必要に応じて手動で削除してください。
 ```
 

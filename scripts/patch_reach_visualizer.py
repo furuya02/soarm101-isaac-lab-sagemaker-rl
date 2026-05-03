@@ -1,12 +1,19 @@
-"""Patch isaac_so_arm101 reach_env_cfg.py to use a sphere goal marker.
+"""Patch isaac_so_arm101 reach_env_cfg.py for a clearer playback video.
 
-By default Isaac Lab UniformPoseCommandCfg renders the goal pose as XYZ axes
-(FRAME_MARKER), which is hard to read in playback videos. The Reach task in
-isaac_so_arm101 uses position-only reward (orientation reward weight is 0),
-so a sphere position marker conveys the target more clearly.
+Three changes:
 
-Current pose (end-effector frame) keeps the default frame marker so we can
-still see how the arm pose moves towards the goal.
+1. Goal pose visualizer: switch from the default frame marker (XYZ axes) to
+   a magenta sphere. Reach uses position-only reward (orientation reward
+   weight is 0), so a sphere conveys the goal clearly. Magenta is chosen so
+   the marker does not collide with the red/green/blue/yellow already on
+   screen (frame axes and the SO-ARM101 yellow body).
+
+2. Camera position: move the default viewer from (2.5, 2.5, 1.5) closer to
+   (1.0, 0.8, 0.6) and lookat (0.0, -0.15, 0.5), framing a single arm and
+   its goal larger in the recorded video.
+
+3. Current pose (end-effector frame) keeps the default frame marker so the
+   arm pose is still visible relative to the goal sphere.
 
 Idempotent: re-running on an already-patched file is a no-op.
 """
@@ -22,8 +29,8 @@ GOAL_SPHERE_MARKER_CFG = VisualizationMarkersCfg(
     prim_path="/Visuals/Command/goal_sphere",
     markers={
         "goal": sim_utils.SphereCfg(
-            radius=0.02,
-            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0)),
+            radius=0.025,
+            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 1.0)),
         ),
     },
 )
@@ -38,6 +45,12 @@ INLINE_NEW = (
     "        goal_pose_visualizer_cfg=GOAL_SPHERE_MARKER_CFG,\n"
 )
 
+VIEWER_OLD = "        self.viewer.eye = (2.5, 2.5, 1.5)"
+VIEWER_NEW = (
+    "        self.viewer.eye = (1.0, 0.8, 0.6)\n"
+    "        self.viewer.lookat = (0.0, -0.15, 0.5)"
+)
+
 PATCHED_MARKER = "GOAL_SPHERE_MARKER_CFG"
 
 
@@ -50,8 +63,11 @@ def main() -> None:
         raise SystemExit(f"Anchor not found: {ANCHOR_PRE_INSERT!r}")
     if INLINE_KEY not in src:
         raise SystemExit(f"Inline anchor not found: {INLINE_KEY!r}")
+    if VIEWER_OLD not in src:
+        raise SystemExit(f"Viewer anchor not found: {VIEWER_OLD!r}")
     src = src.replace(ANCHOR_PRE_INSERT, INSERT_BLOCK + ANCHOR_PRE_INSERT, 1)
     src = src.replace(INLINE_KEY, INLINE_NEW, 1)
+    src = src.replace(VIEWER_OLD, VIEWER_NEW, 1)
     CFG_PY.write_text(src)
     print(f"[patch_reach_visualizer.py] Patched: {CFG_PY}")
 

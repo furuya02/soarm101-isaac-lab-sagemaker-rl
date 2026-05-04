@@ -2,7 +2,6 @@ FROM nvcr.io/nvidia/isaac-lab:2.3.2
 
 ENV ACCEPT_EULA=Y
 ENV PRIVACY_CONSENT=Y
-ENV SAGEMAKER_PROGRAM=train.py
 
 WORKDIR /opt/ml/code
 

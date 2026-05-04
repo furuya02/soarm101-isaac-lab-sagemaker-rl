@@ -22,10 +22,7 @@ export class SoarmStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.RETAIN,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       encryption: s3.BucketEncryption.S3_MANAGED,
-      lifecycleRules: [
-        { prefix: "checkpoints/", expiration: cdk.Duration.days(30) },
-        { prefix: "output/", expiration: cdk.Duration.days(90) },
-      ],
+      lifecycleRules: [{ expiration: cdk.Duration.days(30) }],
     });
 
     const repository = new ecr.Repository(this, "TrainingImageRepo", {
@@ -33,7 +30,10 @@ export class SoarmStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.RETAIN,
       imageScanOnPush: true,
       lifecycleRules: [
-        { maxImageAge: cdk.Duration.days(7), tagStatus: ecr.TagStatus.UNTAGGED },
+        {
+          maxImageAge: cdk.Duration.days(1),
+          tagStatus: ecr.TagStatus.UNTAGGED,
+        },
       ],
     });
 
@@ -68,7 +68,11 @@ export class SoarmStack extends cdk.Stack {
     }
 
     new cdk.CfnOutput(this, "BucketName", { value: bucket.bucketName });
-    new cdk.CfnOutput(this, "EcrRepositoryUri", { value: repository.repositoryUri });
-    new cdk.CfnOutput(this, "SageMakerRoleArn", { value: sagemakerRole.roleArn });
+    new cdk.CfnOutput(this, "EcrRepositoryUri", {
+      value: repository.repositoryUri,
+    });
+    new cdk.CfnOutput(this, "SageMakerRoleArn", {
+      value: sagemakerRole.roleArn,
+    });
   }
 }

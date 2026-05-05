@@ -12,7 +12,13 @@ IMAGE_URI="${ECR_HOST}/${PROJECT_NAME}:${TAG}"
 
 aws ecr get-login-password --region "${REGION}" \
   | docker login --username AWS --password-stdin "${ECR_HOST}"
-docker build --platform linux/amd64 -t "${PROJECT_NAME}:${TAG}" .
-docker tag "${PROJECT_NAME}:${TAG}" "${IMAGE_URI}"
-docker push "${IMAGE_URI}"
+# --provenance=false --sbom=false: BuildKit がデフォルトで生成する
+# attestation / Image Index を抑止する。これらは ECR 上で untagged
+# manifest として残るため、UNTAGGED 削除ライフサイクルで本体まで
+# 巻き込まれて latest がリンク切れになるのを防ぐ。
+docker buildx build \
+  --platform linux/amd64 \
+  --provenance=false --sbom=false \
+  -t "${IMAGE_URI}" \
+  --push .
 echo "${IMAGE_URI}"

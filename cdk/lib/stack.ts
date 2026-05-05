@@ -2,20 +2,17 @@ import * as cdk from "aws-cdk-lib";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import * as ecr from "aws-cdk-lib/aws-ecr";
 import * as iam from "aws-cdk-lib/aws-iam";
-import * as budgets from "aws-cdk-lib/aws-budgets";
 import { Construct } from "constructs";
 
 export interface SoarmStackProps extends cdk.StackProps {
   projectName: string;
   bucketSuffix: string;
-  enableBudget: boolean;
-  budgetEmail: string;
 }
 
 export class SoarmStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: SoarmStackProps) {
     super(scope, id, props);
-    const { projectName, bucketSuffix, enableBudget, budgetEmail } = props;
+    const { projectName, bucketSuffix } = props;
 
     const bucket = new s3.Bucket(this, "ArtifactBucket", {
       bucketName: `${projectName}-${bucketSuffix}`,
@@ -46,26 +43,6 @@ export class SoarmStack extends cdk.Stack {
     });
     bucket.grantReadWrite(sagemakerRole);
     repository.grantPull(sagemakerRole);
-
-    if (enableBudget) {
-      new budgets.CfnBudget(this, "MonthlyBudget", {
-        budget: {
-          budgetName: `${projectName}-monthly-budget`,
-          budgetType: "COST",
-          timeUnit: "MONTHLY",
-          budgetLimit: { amount: 100, unit: "USD" },
-        },
-        notificationsWithSubscribers: [10, 50, 90].map((threshold) => ({
-          notification: {
-            comparisonOperator: "GREATER_THAN",
-            notificationType: "ACTUAL",
-            threshold,
-            thresholdType: "PERCENTAGE",
-          },
-          subscribers: [{ address: budgetEmail, subscriptionType: "EMAIL" }],
-        })),
-      });
-    }
 
     new cdk.CfnOutput(this, "BucketName", { value: bucket.bucketName });
     new cdk.CfnOutput(this, "EcrRepositoryUri", {

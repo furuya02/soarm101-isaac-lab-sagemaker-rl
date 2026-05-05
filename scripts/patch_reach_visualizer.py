@@ -1,4 +1,4 @@
-"""Replace the Reach goal marker with a magenta sphere and bring the camera closer."""
+"""Replace the Reach goal marker with a magenta sphere."""
 
 from pathlib import Path
 
@@ -26,11 +26,6 @@ if "GOAL_SPHERE_MARKER_CFG" not in src:
     src = src.replace(
         "        debug_vis=True,\n",
         "        debug_vis=True,\n        goal_pose_visualizer_cfg=GOAL_SPHERE_MARKER_CFG,\n",
-        1,
-    )
-    src = src.replace(
-        "        self.viewer.eye = (2.5, 2.5, 1.5)",
-        "        self.viewer.eye = (1.5, 1.5, 1.0)\n        self.viewer.lookat = (0.0, 0.0, 0.4)",
         1,
     )
     assert "GOAL_SPHERE_MARKER_CFG" in src, "patch failed"

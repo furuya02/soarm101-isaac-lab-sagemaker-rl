@@ -1,32 +1,19 @@
-"""Make pretrained_checkpoint import resilient across Isaac Lab versions.
+"""Update pretrained_checkpoint import path for the pinned base image.
 
-Isaac Lab 2.3.x で `isaaclab.utils.pretrained_checkpoint` が
-`isaaclab_rl.utils.pretrained_checkpoint` に移動した一方、`isaac_so_arm101`
-main HEAD は移動前の旧 path を import している。base image のバージョンに
-よってどちらが存在するかが変わるため、3 段フォールバック（旧 path → 新
-path → ダミー）で書き換える。
+Isaac Lab 2.3.x で pretrained_checkpoint モジュールが
+isaaclab.utils → isaaclab_rl.utils に移動。base image を 2.3.2 に pin
+している本記事では新 path のみ存在するため、isaac_so_arm101 の play.py
+を新 path に書き換える。
 """
 
-import re
 from pathlib import Path
 
 PLAY_PY = Path("/opt/isaac_so_arm101/src/isaac_so_arm101/scripts/rsl_rl/play.py")
-NEW = """try:
-    from isaaclab.utils.pretrained_checkpoint import get_published_pretrained_checkpoint
-except ImportError:
-    try:
-        from isaaclab_rl.utils.pretrained_checkpoint import get_published_pretrained_checkpoint
-    except ImportError:
-        def get_published_pretrained_checkpoint(*a, **k):
-            return None"""
-
-OLD_LINE_RE = re.compile(
-    r"^from isaaclab\.utils\.pretrained_checkpoint import get_published_pretrained_checkpoint$",
-    re.MULTILINE,
-)
+OLD = "from isaaclab.utils.pretrained_checkpoint import get_published_pretrained_checkpoint"
+NEW = "from isaaclab_rl.utils.pretrained_checkpoint import get_published_pretrained_checkpoint"
 
 src = PLAY_PY.read_text()
-if OLD_LINE_RE.search(src):
-    PLAY_PY.write_text(OLD_LINE_RE.sub(NEW, src, count=1))
-elif "from isaaclab_rl.utils.pretrained_checkpoint" not in src:
+if OLD in src:
+    PLAY_PY.write_text(src.replace(OLD, NEW, 1))
+elif NEW not in src:
     raise SystemExit(f"pattern not found in {PLAY_PY}")

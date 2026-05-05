@@ -18,7 +18,7 @@ Companion blog post: [SO-ARM101 with Isaac Lab on SageMaker Training Job (Manage
 
 ```
 .
-├── cdk/                    # AWS CDK (TypeScript): S3, ECR, IAM Role, Budget
+├── cdk/                    # AWS CDK (TypeScript): S3, ECR, IAM Role
 ├── scripts/
 │   └── push_to_ecr.sh      # Build & push the training image to ECR
 ├── src/
@@ -31,7 +31,7 @@ Companion blog post: [SO-ARM101 with Isaac Lab on SageMaker Training Job (Manage
 
 ## Prerequisites
 
-- AWS account with SageMaker / S3 / ECR / Budgets access
+- AWS account with SageMaker / S3 / ECR access
 - AWS CLI v2 configured for `ap-northeast-1`
 - Docker (with the `linux/amd64` build platform available)
 - Node.js 20.x and AWS CDK v2 (`pnpm add -g aws-cdk`)
@@ -67,15 +67,13 @@ The stack creates:
 - S3 bucket: `soarm101-isaac-lab-sagemaker-rl-<ACCOUNT_ID>`
 - ECR repository: `soarm101-isaac-lab-sagemaker-rl`
 - IAM role: `soarm101-isaac-lab-sagemaker-rl-sagemaker-execution-role`
-- Monthly Budget alert (USD 100, 10/50/90 % thresholds, email to the address you pass via `-c budget_email=...`)
 
-To override the bucket suffix or budget email:
+To override the bucket suffix:
 
 ```bash
 cdk deploy \
   -c account_id=${ACCOUNT_ID} \
-  -c bucket_suffix=20260503 \
-  -c budget_email=you@example.com
+  -c bucket_suffix=20260503
 ```
 
 ### 3. Build & push the training image to ECR

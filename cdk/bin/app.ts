@@ -11,6 +11,4 @@ new SoarmStack(app, "SoarmStack", {
   env: { account: accountId, region },
   projectName: "soarm101-isaac-lab-sagemaker-rl",
   bucketSuffix: app.node.tryGetContext("bucket_suffix") ?? accountId,
-  enableBudget: (app.node.tryGetContext("enable_budget") ?? "true").toString() === "true",
-  budgetEmail: app.node.tryGetContext("budget_email") ?? "please-set-budget-email@example.com",
 });

@@ -18,7 +18,7 @@ SO-ARM101 の Reach タスクを Isaac Lab で強化学習し、Amazon SageMaker
 
 ```
 .
-├── cdk/                    # AWS CDK（TypeScript）: S3 / ECR / IAM Role / Budget
+├── cdk/                    # AWS CDK（TypeScript）: S3 / ECR / IAM Role
 ├── scripts/
 │   └── push_to_ecr.sh      # 学習用 image を build して ECR に push
 ├── src/
@@ -31,7 +31,7 @@ SO-ARM101 の Reach タスクを Isaac Lab で強化学習し、Amazon SageMaker
 
 ## 前提条件
 
-- SageMaker / S3 / ECR / Budgets 権限のある AWS アカウント
+- SageMaker / S3 / ECR 権限のある AWS アカウント
 - `ap-northeast-1` 用に設定済みの AWS CLI v2
 - Docker（`linux/amd64` ビルド対応）
 - Node.js 20.x と AWS CDK v2（`pnpm add -g aws-cdk`）
@@ -67,15 +67,13 @@ cdk deploy \
 - S3 バケット: `soarm101-isaac-lab-sagemaker-rl-<ACCOUNT_ID>`
 - ECR リポジトリ: `soarm101-isaac-lab-sagemaker-rl`
 - IAM ロール: `soarm101-isaac-lab-sagemaker-rl-sagemaker-execution-role`
-- 月次 Budget アラート（USD 100、10/50/90 % しきい値、`-c budget_email=...` で指定したアドレスへ通知）
 
-bucket suffix や Budget 通知先を上書きする場合：
+bucket suffix を上書きする場合：
 
 ```bash
 cdk deploy \
   -c account_id=${ACCOUNT_ID} \
-  -c bucket_suffix=20260503 \
-  -c budget_email=you@example.com
+  -c bucket_suffix=20260503
 ```
 
 ### 3. 学習用 image を build して ECR に push

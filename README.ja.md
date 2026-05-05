@@ -99,10 +99,10 @@ export ECR_IMAGE_URI=${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/soarm101-
 export S3_BUCKET=soarm101-isaac-lab-sagemaker-rl-${ACCOUNT_ID}
 
 # On-demand で動作確認
-USE_SPOT=false MAX_RUN_HOURS=2 python submit.py
+USE_SPOT=false MAX_RUN_HOURS=1 python submit.py
 
 # Managed Spot 実行
-USE_SPOT=true MAX_RUN_HOURS=2 MAX_WAIT_HOURS=6 python submit.py
+USE_SPOT=true MAX_RUN_HOURS=1 MAX_WAIT_HOURS=2 python submit.py
 ```
 
 ### 5. 学習済みモデルの取得

@@ -25,8 +25,8 @@ def main() -> None:
             "MAX_ITERATIONS": os.environ.get("MAX_ITERATIONS", "1000"),
             "EXPERIMENT_NAME": "so_arm101_reach",
         }
-        max_run_h = int(os.environ.get("MAX_RUN_HOURS", "2"))
-        max_wait_h = int(os.environ.get("MAX_WAIT_HOURS", "6"))
+        max_run_h = int(os.environ.get("MAX_RUN_HOURS", "1"))
+        max_wait_h = int(os.environ.get("MAX_WAIT_HOURS", "2"))
         job_name = f"soarm101-reach-{int(time.time())}"
     else:
         env = {
